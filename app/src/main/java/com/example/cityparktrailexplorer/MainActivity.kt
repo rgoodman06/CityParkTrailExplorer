@@ -1,5 +1,8 @@
 package com.example.cityparktrailexplorer
-
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -51,9 +54,20 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         "Lake Ella",
         "Alfred B. Maclay Gardens"
     )
+    val parkAmenities = mapOf(
+        "Cascades Park" to listOf("Walking Trails", "Picnic Areas"),
+        "Tom Brown Park" to listOf("Walking Trails", "Playgrounds", "Picnic Areas"),
+        "Lake Ella" to listOf("Walking Trails", "Picnic Areas"),
+        "Alfred B. Maclay Gardens" to listOf("Walking Trails", "Picnic Areas")
+    )
 
-    val filteredParks = parks.filter {
-        it.contains(searchText, ignoreCase = true)
+    var selectedAmenity by remember { mutableStateOf("All") }
+    val filteredParks = parks.filter { park ->
+        val matchesSearch = park.contains(searchText, ignoreCase = true)
+        val matchesAmenity = selectedAmenity == "All" ||
+                parkAmenities[park]?.contains(selectedAmenity) == true
+
+        matchesSearch && matchesAmenity
     }
 
     Column(modifier = modifier.padding(16.dp)) {
@@ -70,6 +84,34 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
             onValueChange = { searchText = it },
             label = { Text("Search parks") }
         )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Text(text = "Filter by amenity")
+
+        var menuExpanded by remember { mutableStateOf(false) }
+
+        Box {
+            OutlinedButton(onClick = { menuExpanded = true }) {
+                Text(text = selectedAmenity)
+            }
+
+            DropdownMenu(
+                expanded = menuExpanded,
+                onDismissRequest = { menuExpanded = false }
+            ) {
+                listOf("All", "Walking Trails", "Playgrounds", "Picnic Areas")
+                    .forEach { amenity ->
+                        DropdownMenuItem(
+                            text = { Text(amenity) },
+                            onClick = {
+                                selectedAmenity = amenity
+                                menuExpanded = false
+                            }
+                        )
+                    }
+            }
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
 
