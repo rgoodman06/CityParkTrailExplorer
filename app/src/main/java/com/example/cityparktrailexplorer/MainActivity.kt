@@ -26,14 +26,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 class MainActivity : ComponentActivity() {
+    private fun loadParksFromCSV(): List<String> {
+        return try {
+            assets.open("parks_data.csv").bufferedReader().use { reader ->
+                reader.readLine() // Skip column headings
+                reader.lineSequence()
+                    .filter { it.isNotBlank() }
+                    .map { line ->
+                        line.substringBefore(",").trim().trim('"')
+                    }
+                    .filter { it.isNotBlank() }
+                    .toList()
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val csvParks = loadParksFromCSV()
         setContent {
             CityParkTrailExplorerTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
                         name = "City Park & Trail Explorer",
+                        parks = csvParks,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -45,15 +63,13 @@ class MainActivity : ComponentActivity() {
 
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    var searchText by remember { mutableStateOf("") }
+fun Greeting(
+    name: String,
+    parks: List<String>,
+    modifier: Modifier = Modifier
+) {
 
-    val parks = listOf(
-        "Cascades Park",
-        "Tom Brown Park",
-        "Lake Ella",
-        "Alfred B. Maclay Gardens"
-    )
+    var searchText by remember { mutableStateOf("") }
     val parkAmenities = mapOf(
         "Cascades Park" to listOf("Walking Trails", "Picnic Areas"),
         "Tom Brown Park" to listOf("Walking Trails", "Playgrounds", "Picnic Areas"),
@@ -131,6 +147,10 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
     CityParkTrailExplorerTheme {
-        Greeting("Android")
+        Greeting(
+            name = "Android",
+            parks = listOf("Sample Park"),
+            modifier = Modifier
+        )
     }
 }
