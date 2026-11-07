@@ -17,7 +17,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.unit.dp
-
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,8 +40,22 @@ class MainActivity : ComponentActivity() {
 }
 
 
+
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
+    var searchText by remember { mutableStateOf("") }
+
+    val parks = listOf(
+        "Cascades Park",
+        "Tom Brown Park",
+        "Lake Ella",
+        "Alfred B. Maclay Gardens"
+    )
+
+    val filteredParks = parks.filter {
+        it.contains(searchText, ignoreCase = true)
+    }
+
     Column(modifier = modifier.padding(16.dp)) {
         Text(text = "Welcome to $name!")
 
@@ -47,12 +65,24 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        Text(text = "1. Cascades Park")
-        Text(text = "2. Tom Brown Park")
-        Text(text = "3. Lake Ella")
-        Text(text = "4. Alfred B. Maclay Gardens")
+        OutlinedTextField(
+            value = searchText,
+            onValueChange = { searchText = it },
+            label = { Text("Search parks") }
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        filteredParks.forEach { park ->
+            Text(text = park)
+        }
+
+        if (filteredParks.isEmpty()) {
+            Text(text = "No parks found")
+        }
     }
 }
+
 
 
 @Preview(showBackground = true)
